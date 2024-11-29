@@ -4,11 +4,11 @@ import { HeaderWrapper, Title, Nav, NavLink } from './Header.styles.jsx';
 function Header() {
   return (
     <HeaderWrapper>
-      <Title>Meu Site</Title>
+      <Title>My Finance</Title>
       <Nav>
         <NavLink href="/">Home</NavLink>
-        <NavLink href="/about">About</NavLink>
-        <NavLink href="/contact">Contact</NavLink>
+        <NavLink href="/AccountPlan">Plano de Contas</NavLink>
+        <NavLink href="/FinancialTransactions">Transações Financeiras</NavLink>
       </Nav>
     </HeaderWrapper>
   );
