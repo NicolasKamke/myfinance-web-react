@@ -43,6 +43,14 @@ export const Input = styled.input`
   border-radius: 5px;
 `;
 
+export const Select = styled.select`
+  width: 80%;
+  margin: 0.5rem 0;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+`;
+
 export const NoDataMessage = styled.p`
   text-align: center;
   font-size: 1.2rem;

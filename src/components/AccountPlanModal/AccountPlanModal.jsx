@@ -1,60 +1,76 @@
-import React from 'react';
-import { Button, Input } from './AccountPlanModal.styles';
+import React, { useState } from 'react';
+import { Button, Input, Select } from './AccountPlanModal.styles';
 import Modal from '../Modal/Modal';
 import PropTypes from 'prop-types';
 
 function AccountPlanModal({
+  accountTypes,
   editingRecord,
   formData,
-  handleInputChange,
   handleSubmit,
   closeModal,
 }) {
+  const [data, setData] = useState(formData);
+
+  const updateData = (e) => {
+    const { name, value } = e.target;
+    setData((lastData) => {
+      return { ...lastData, [name]: value };
+    });
+  };
+
   return (
     <Modal>
       <h2>{editingRecord ? 'Editar Registro' : 'Adicionar Registro'}</h2>
       <Input
         type="text"
-        name="id"
-        placeholder="ID"
-        value={formData.id}
-        onChange={handleInputChange}
-        disabled={!!editingRecord} // Desabilitar edição do ID ao editar
+        name="name"
+        placeholder="Nome"
+        value={data?.name}
+        onChange={updateData}
       />
-      <Input
-        type="text"
-        name="description"
-        placeholder="Descrição"
-        value={formData.description}
-        onChange={handleInputChange}
-      />
-      <Input
-        type="text"
-        name="type"
-        placeholder="Tipo"
-        value={formData.type}
-        onChange={handleInputChange}
-      />
-      <Button action="create" onClick={handleSubmit}>
-        {editingRecord ? 'Salvar' : 'Criar'}
-      </Button>
-      <Button action="delete" onClick={closeModal}>
-        Cancelar
-      </Button>
+      <Select value={data?.type?.id} name="type" onChange={updateData}>
+        <option value="">Selecione o Tipo</option>
+        {accountTypes.map((type) => (
+          <option key={type.id} value={type.id}>
+            {type.name}
+          </option>
+        ))}
+      </Select>
+      <div>
+        <Button action="create" onClick={() => handleSubmit(data)}>
+          {editingRecord ? 'Salvar' : 'Criar'}
+        </Button>
+        <Button action="delete" onClick={closeModal}>
+          Cancelar
+        </Button>
+      </div>
     </Modal>
   );
 }
 
 AccountPlanModal.propTypes = {
-  editingRecord: PropTypes.bool.isRequired,
+  editingRecord: PropTypes.bool,
   formData: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    description: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
+    id: PropTypes.string,
+    name: PropTypes.string,
+    type: PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+    }),
   }).isRequired,
-  handleInputChange: PropTypes.func.isRequired,
+  accountTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number,
+      name: PropTypes.string,
+    })
+  ).isRequired,
   handleSubmit: PropTypes.func.isRequired,
   closeModal: PropTypes.func.isRequired,
+};
+
+AccountPlanModal.default = {
+  editingRecord: null,
 };
 
 export default AccountPlanModal;

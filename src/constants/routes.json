@@ -1,0 +1,12 @@
+{
+  "GetTypes": "https://localhost:44395/AccountType/GetTypes",
+  "AddPlan": "https://localhost:44395/AccountPlan/AddPlan",
+  "GetPlans": "https://localhost:44395/AccountPlan/GetPlans",
+  "GetAllPlans": "https://localhost:44395/AccountPlan/GetAllPlans",
+  "DeletePlan": "https://localhost:44395/AccountPlan/DeletePlan",
+  "UpdatePlan": "https://localhost:44395/AccountPlan/UpdatePlan",
+  "GetTransactions": "https://localhost:44395/AccountTransaction/GetTransactions",
+  "UpdateTransactions": "https://localhost:44395/AccountTransaction/UpdateTransactions",
+  "AddTransaction": "https://localhost:44395/AccountTransaction/AddTransaction",
+  "DeleteTransaction": "https://localhost:44395/AccountTransaction/DeleteTransaction"
+}

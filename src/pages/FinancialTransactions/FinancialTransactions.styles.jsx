@@ -76,7 +76,7 @@ export const Button = styled.button`
     }
     if (action === 'create') {
       return `
-        background: #388e3c;
+        background: #00796b;
         color: white;
         margin-bottom: 1.5rem;
         font-size: 1rem;

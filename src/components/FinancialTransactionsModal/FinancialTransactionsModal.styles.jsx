@@ -42,3 +42,11 @@ export const Button = styled.button`
     opacity: 0.9;
   }
 `;
+
+export const Select = styled.select`
+  width: 80%;
+  margin: 0.5rem 0;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+`;

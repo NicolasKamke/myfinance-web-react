@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Button,
   ButtonGroup,
@@ -11,25 +11,18 @@ import {
   Title,
 } from './FinancialTransactions.styles';
 import FinancialTransactionsModal from '../../components/FinancialTransactionsModal/FinancialTransactionsModal';
-
+import getAccountTransactions from '../../functions/GetTransactions/GetTransactions';
+import getAllAccountPlans from '../../functions/GetAllPlans/GetAllPlans';
+import updateAccountTransaction from '../../functions/UpdateTransaction/UpdateTransaction';
+import addAccountTransaction from '../../functions/AddTransaction/AddTransaction';
+import deleteAccountTransaction from '../../functions/DeleteTransaction/DeleteTransaction';
+import Pagination from '../../components/Pagination/Pagination';
 function FinancialTransactions() {
-  const [transactions, setTransactions] = useState([
-    {
-      id: '1',
-      description: 'Compra de insumos',
-      type: 'Despesa',
-      value: 120.0,
-      date: '2024-11-28',
-    },
-    {
-      id: '2',
-      description: 'Venda de produto',
-      type: 'Receita',
-      value: 250.0,
-      date: '2024-11-27',
-    },
-  ]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0); // Total de registros
+  const [pageSize] = useState(10); // Itens por página
   const [showModal, setShowModal] = useState(false);
+  const [accountPlans, setAccountPlans] = useState([]);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [formData, setFormData] = useState({
     id: '',
@@ -38,6 +31,63 @@ function FinancialTransactions() {
     value: '',
     date: '',
   });
+  const [records, setRecords] = useState([]);
+
+  const updateScreen = async (page = 1) => {
+    try {
+      const plans = await getAccountTransactions(page, pageSize);
+      const filteredTypes = plans?.data?.map((item) => {
+        return {
+          id: item?.id,
+          description: item?.description,
+          plan: {
+            id: item?.accountPlan?.id,
+            name: item?.accountPlan?.name,
+            type: {
+              id: item?.accountPlan?.accountType?.id,
+              shortName: item?.accountPlan?.accountType?.shortName,
+              fullName: item?.accountPlan?.accountType?.fullName,
+              description: item?.accountPlan?.accountType?.description,
+            },
+          },
+          value: item?.value,
+          date: new Date(item?.dateTime),
+        };
+      });
+      setRecords(filteredTypes);
+      setCurrentPage(plans?.page);
+      setTotalRecords(plans?.totalCount);
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
+
+  useEffect(() => {
+    updateScreen(currentPage);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const plans = await getAllAccountPlans();
+        const filteredTypes = plans?.map((item) => {
+          return {
+            id: item?.id,
+            name: item?.name,
+            type: {
+              id: item?.accountType?.id,
+              name: item?.accountType?.fullName,
+            },
+          };
+        });
+        setAccountPlans(filteredTypes);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const openModal = (transaction = null) => {
     setEditingTransaction(transaction);
@@ -59,33 +109,51 @@ function FinancialTransactions() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = () => {
-    if (
-      formData.id &&
-      formData.description &&
-      formData.type &&
-      formData.value &&
-      formData.date
-    ) {
-      if (editingTransaction) {
-        // Atualizar transação
-        setTransactions((prev) =>
-          prev.map((t) =>
-            t.id === editingTransaction.id ? { ...t, ...formData } : t
-          )
-        );
+  const handleSubmit = async (data) => {
+    console.log(data);
+    if (data?.description && data?.value && data?.date && data?.plan?.id) {
+      if (data?.id) {
+        await updateAccountTransaction({
+          id: data.id,
+          description: data.description,
+          value: data.value,
+          dateTime: data.date,
+          accountPlan: {
+            id: data.plan.id,
+          },
+        });
       } else {
-        // Adicionar nova transação
-        setTransactions((prev) => [...prev, formData]);
+        await addAccountTransaction({
+          description: data.description,
+          value: data.value,
+          dateTime: data.date,
+          accountPlan: {
+            id: data.plan.id,
+          },
+        });
       }
+
       closeModal();
+      await updateScreen(currentPage);
     } else {
       alert('Preencha todos os campos antes de salvar.');
     }
   };
 
-  const handleDelete = (transactionId) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== transactionId));
+  const onDelete = async (id) => {
+    try {
+      if (typeof id !== 'undefined' && id != null) {
+        await deleteAccountTransaction(id);
+        await updateScreen(currentPage);
+      }
+    } catch {
+      alert('Erro ao deletar o registro.');
+    }
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    updateScreen(page);
   };
 
   return (
@@ -97,7 +165,6 @@ function FinancialTransactions() {
       <StyledTable>
         <TableHead>
           <TableRow>
-            <TableHeader>ID</TableHeader>
             <TableHeader>Descrição</TableHeader>
             <TableHeader>Tipo</TableHeader>
             <TableHeader>Valor</TableHeader>
@@ -106,13 +173,14 @@ function FinancialTransactions() {
           </TableRow>
         </TableHead>
         <tbody>
-          {transactions.map((transaction) => (
-            <TableRow key={transaction.id}>
-              <TableData>{transaction.id}</TableData>
-              <TableData>{transaction.description}</TableData>
-              <TableData>{transaction.type}</TableData>
-              <TableData>R$ {transaction.value.toFixed(2)}</TableData>
-              <TableData>{transaction.date}</TableData>
+          {records.map((transaction) => (
+            <TableRow key={transaction?.id}>
+              <TableData>{transaction?.description}</TableData>
+              <TableData>{transaction?.plan?.type?.shortName}</TableData>
+              <TableData>R$ {transaction?.value?.toFixed(2)}</TableData>
+              <TableData>
+                {transaction?.date?.toLocaleDateString('pt-BR')}
+              </TableData>
               <TableData>
                 <ButtonGroup>
                   <Button action="edit" onClick={() => openModal(transaction)}>
@@ -120,7 +188,7 @@ function FinancialTransactions() {
                   </Button>
                   <Button
                     action="delete"
-                    onClick={() => handleDelete(transaction.id)}
+                    onClick={() => onDelete(transaction.id)}
                   >
                     Excluir
                   </Button>
@@ -131,6 +199,12 @@ function FinancialTransactions() {
         </tbody>
       </StyledTable>
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(totalRecords / pageSize)}
+        onPageChange={handlePageChange}
+      />
+
       {/* Modal */}
       {showModal && (
         <FinancialTransactionsModal
@@ -138,6 +212,7 @@ function FinancialTransactions() {
           editingTransaction={editingTransaction}
           formData={formData}
           handleInputChange={handleInputChange}
+          accountPlans={accountPlans}
           handleSubmit={handleSubmit}
         />
       )}
