@@ -10,7 +10,19 @@ export const Container = styled.div`
   font-family: 'Arial', sans-serif;
 `;
 
+export const TitleContainer = styled.div`
+  display: flex;
+  align-items: center;
+  user-select: none;
+`;
+
 export const Title = styled.h1`
+  text-align: center;
+  color: #333;
+  font-size: 2rem;
+`;
+
+export const Arrow = styled.span`
   text-align: center;
   color: #333;
   font-size: 2rem;
