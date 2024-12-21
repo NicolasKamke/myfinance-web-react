@@ -74,7 +74,10 @@ function AccountPlan() {
   }, []);
 
   const openModal = (record = null) => {
-    setEditingRecord(true);
+    if (record) {
+      setEditingRecord(true);
+    }
+
     if (record) {
       setFormData({
         id: String(record.id),
@@ -139,7 +142,7 @@ function AccountPlan() {
 
   return (
     <TableContainer>
-      <Title>📋 Registros</Title>
+      <Title>📋 Plano de Contas</Title>
       <Button action="create" onClick={() => openModal()}>
         Criar item de plano de conta
       </Button>

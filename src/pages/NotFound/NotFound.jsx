@@ -1,11 +1,8 @@
 import React from 'react';
+import { Container } from './NotFound.styles';
 
 function NotFound() {
-  return (
-    <>
-      <div>Not Found</div>
-    </>
-  );
+  return <Container>Not Found</Container>;
 }
 
 export default NotFound;
